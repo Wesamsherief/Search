@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta content="light dark" name="color-scheme">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Search Results</title>
+        <link rel="stylesheet" href="/static/styles.css">
+    </head>
+    <body>
+        <div class="container">
+            <form action="/search" method="GET">
+                <input type="text" name="q" value="{{ query }}" placeholder="Search again..." aria-label="Search">
+                <input type="hidden" name="as_sitesearch" value="{{ site }}">
+                <input type="hidden" name="as_filetype" value="{{ filetype }}">
+                <button type="submit">Search</button>
+            </form>
+            <hr>
+
+            {% if query %}
+                <h1>Search Results for: "{{ query }}"</h1>
+            {% else %}
+                <h1>Search Results</h1>
+            {% endif %}
+
+            {% if site or filetype %}
+                <p class="results-count">
+                    Filters:
+                    {% if site %}site: {{ site }}{% endif %}
+                    {% if site and filetype %} &middot; {% endif %}
+                    {% if filetype %}filetype: {{ filetype }}{% endif %}
+                </p>
+            {% endif %}
+
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+
+            {% if results %}
+                <p class="results-count">Found {{ results|length }} result(s):</p>
+                <ul class="results-list">
+                    {% for item in results %}
+                        <li class="result-item">
+                            <h3><a href="{{ item.url }}">{{ item.title }}</a></h3>
+                            <p>{{ item.snippet }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="no-results">No results found. Try searching for something else.</p>
+            {% endif %}
+
+            <br>
+            <a href="/">Back to Home</a>
+        </div>
+    </body>
+</html>

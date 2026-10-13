@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en-EG">
+    <head>
+        <meta charset="UTF-8">
+        <meta content="light dark" name="color-scheme">
+        <meta content="origin" name="referrer">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/static/styles.css">
+        <title>Google</title>
+    </head>
+    <body>
+        <div class="main-wrapper">
+            <form action="/search" method="get" class="search-form" id="search-form">
+                <h1 class="logo-text">
+                   <span class="g-blue">G</span><span class="g-red">o</span><span
+                    class="g-yellow">o</span><span class="g-blue">g</span><span
+                     class="g-green">l</span><span class="g-red">e</span>
+                </h1>
+
+                {% if error %}
+                    <p class="error">{{ error }}</p>
+                {% endif %}
+
+                <div class="search-container">
+                    <svg class="search-icon" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path fill="var(--text-muted)" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+                    </svg>
+
+                    <input type="text" name="q" id="search-input" class="search-input"
+                           autocomplete="off" autofocus aria-label="Search"
+                           value="{{ query or '' }}">
+                </div>
+
+                <div class="button-group">
+                    <input type="submit" name="btnG" value="Google Search" class="btn">
+                    <input type="submit" name="btnI" value="I'm Feeling Lucky" class="btn lucky-btn">
+                    <input type="submit" name="btnIS" value="Image Search" class="btn">
+                </div>
+
+                <details class="advanced-options">
+                    <summary>Advanced Search</summary>
+                    <div class="advanced-fields">
+                        <label>
+                            Site or domain:
+                            <input type="text" name="as_sitesearch" placeholder="e.g. wikipedia.org"
+                                   class="search-input-sm" value="{{ site or '' }}">
+                        </label>
+
+                        <label>
+                            File type:
+                            <select name="as_filetype" class="search-input-sm">
+                                <option value="">Any format</option>
+                                <option value="pdf" {% if filetype == 'pdf' %}selected{% endif %}>PDF</option>
+                                <option value="doc" {% if filetype == 'doc' %}selected{% endif %}>Word (.doc)</option>
+                                <option value="ppt" {% if filetype == 'ppt' %}selected{% endif %}>PowerPoint (.ppt)</option>
+                            </select>
+                        </label>
+                    </div>
+                </details>
+            </form>
+        </div>
+
+
+
+        <script>
+            const searchForm  = document.getElementById('search-form');
+            const searchInput = document.getElementById('search-input');
+            const siteField     = document.querySelector('[name="as_sitesearch"]');
+            const filetypeField = document.querySelector('[name="as_filetype"]');
+
+            searchForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const q        = searchInput.value.trim();
+                const site     = siteField.value.trim();
+                const filetype = filetypeField.value;
+
+                const parts = [];
+                if (q)        parts.push(q);
+                if (site)     parts.push('site:' + site);
+                if (filetype) parts.push('filetype:' + filetype);
+                const query = parts.join(' ').trim();
+
+                if (!query) {
+                    searchInput.focus();
+                    return;
+                }
+
+                // which?
+                const name = event.submitter ? event.submitter.name : 'btnG';
+
+                let url;
+                if (name === 'btnIS') {
+                    url = 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(query);
+                } else if (name === 'btnI') {
+                    url = 'https://www.google.com/search?btnI=1&q=' + encodeURIComponent(query);
+                } else {
+                    url = 'https://www.google.com/search?q=' + encodeURIComponent(query);
+                }
+
+                window.location.href = url;
+            });
+        </script>
+    </body>
+</html>
