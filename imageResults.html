@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta content="light dark" name="color-scheme">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ query }} - Image Search</title>
+        <link rel="stylesheet" href="/static/styles.css">
+    </head>
+    <body>
+        <div class="container">
+            <form action="/search" method="GET" class="result-search-form">
+                <input type="text" name="q" value="{{ query }}" placeholder="Search images..." aria-label="Search">
+                <button type="submit" name="btnIS" value="Image Search">Search</button>
+            </form>
+            <hr>
+
+            <h1>Image results for: "{{ query }}"</h1>
+
+            {% if images %}
+                <p class="results-count">Found {{ images|length }} image(s):</p>
+                <div class="image-grid">
+                    {% for img in images %}
+                        <a class="image-card" href="{{ img.url }}" target="_blank" rel="noopener">
+                            <img src="{{ img.thumb }}" alt="{{ img.title }}" loading="lazy">
+                            <span class="image-source">{{ img.source }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-results">No images found. Try a different term.</p>
+            {% endif %}
+
+            <br>
+            <a href="/">Back to Home</a>
+        </div>
+    </body>
+</html>
