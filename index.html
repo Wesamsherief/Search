@@ -1,105 +1,134 @@
 <!DOCTYPE html>
-<html lang="en-EG">
-    <head>
-        <meta charset="UTF-8">
-        <meta content="light dark" name="color-scheme">
-        <meta content="origin" name="referrer">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="/static/styles.css">
-        <title>Google</title>
-    </head>
-    <body>
-        <div class="main-wrapper">
-            <form action="/search" method="get" class="search-form" id="search-form">
-                <h1 class="logo-text">
-                   <span class="g-blue">G</span><span class="g-red">o</span><span
-                    class="g-yellow">o</span><span class="g-blue">g</span><span
-                     class="g-green">l</span><span class="g-red">e</span>
-                </h1>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Search App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4">
 
-                {% if error %}
-                    <p class="error">{{ error }}</p>
-                {% endif %}
-
-                <div class="search-container">
-                    <svg class="search-icon" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path fill="var(--text-muted)" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
-                    </svg>
-
-                    <input type="text" name="q" id="search-input" class="search-input"
-                           autocomplete="off" autofocus aria-label="Search"
-                           value="{{ query or '' }}">
+    <div id="app" class="w-full max-w-2xl bg-white p-6 rounded-lg shadow-md">
+        <div id="search-view">
+            <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Search App</h1>
+            <div id="error-msg" class="hidden mb-4 p-3 bg-red-100 text-red-700 rounded text-sm"></div>
+            
+            <form id="search-form" class="space-y-4" onsubmit="handleSearch(event)">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Search Query</label>
+                    <input type="text" id="q" name="q" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
-
-                <div class="button-group">
-                    <input type="submit" name="btnG" value="Google Search" class="btn">
-                    <input type="submit" name="btnI" value="I'm Feeling Lucky" class="btn lucky-btn">
-                    <input type="submit" name="btnIS" value="Image Search" class="btn">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Site Search (optional)</label>
+                    <input type="text" id="as_sitesearch" name="as_sitesearch" placeholder="example.com" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
                 </div>
-
-                <details class="advanced-options">
-                    <summary>Advanced Search</summary>
-                    <div class="advanced-fields">
-                        <label>
-                            Site or domain:
-                            <input type="text" name="as_sitesearch" placeholder="e.g. wikipedia.org"
-                                   class="search-input-sm" value="{{ site or '' }}">
-                        </label>
-
-                        <label>
-                            File type:
-                            <select name="as_filetype" class="search-input-sm">
-                                <option value="">Any format</option>
-                                <option value="pdf" {% if filetype == 'pdf' %}selected{% endif %}>PDF</option>
-                                <option value="doc" {% if filetype == 'doc' %}selected{% endif %}>Word (.doc)</option>
-                                <option value="ppt" {% if filetype == 'ppt' %}selected{% endif %}>PowerPoint (.ppt)</option>
-                            </select>
-                        </label>
-                    </div>
-                </details>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Filetype (optional)</label>
+                    <input type="text" id="as_filetype" name="as_filetype" placeholder="pdf, docx" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="flex space-x-4 pt-2">
+                    <button type="submit" name="search" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 font-medium">Search</button>
+                    <button type="submit" name="btnI" value="1" class="bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 font-medium">I'm Feeling Lucky</button>
+                    <button type="submit" name="btnIS" value="1" class="bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 font-medium">Image Search</button>
+                </div>
             </form>
         </div>
 
+        <div id="results-view" class="hidden">
+            <button onclick="goBack()" class="mb-4 text-blue-600 hover:underline text-sm font-medium">&larr; Back to Search</button>
+            <h2 id="results-title" class="text-xl font-semibold mb-4 text-gray-800"></h2>
+            <div id="results-container" class="space-y-4"></div>
+        </div>
+    </div>
 
+    <script>
+        function runSearch(query, site, filetype) {
+            return [{
+                title: "Example result for: " + (query || "all"),
+                url: "https://example.com",
+                snippet: "This is a static placeholder snippet simulating web search results."
+            }];
+        }
 
-        <script>
-            const searchForm  = document.getElementById('search-form');
-            const searchInput = document.getElementById('search-input');
-            const siteField     = document.querySelector('[name="as_sitesearch"]');
-            const filetypeField = document.querySelector('[name="as_filetype"]');
+        function runImageSearch(query) {
+            let images = [];
+            for (let i = 1; i <= 9; i++) {
+                let seed = (query || 'g') + i;
+                images.push({
+                    title: (query || 'image') + ' ' + i,
+                    url: `https://picsum.photos/seed/${seed}/400/300`,
+                    thumb: `https://picsum.photos/seed/${seed}/400/300`,
+                    source: "example.com"
+                });
+            }
+            return images;
+        }
 
-            searchForm.addEventListener('submit', (event) => {
-                event.preventDefault();
+        function handleSearch(event) {
+            event.preventDefault();
+            const q = document.getElementById('q').value.trim();
+            const site = document.getElementById('as_sitesearch').value.trim();
+            const filetype = document.getElementById('as_filetype').value.trim();
+            const errorDiv = document.getElementById('error-msg');
 
-                const q        = searchInput.value.trim();
-                const site     = siteField.value.trim();
-                const filetype = filetypeField.value;
+            if (!q && !site && !filetype) {
+                errorDiv.textContent = "Please enter a search term or fill in an advanced field";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            errorDiv.classList.add('hidden');
 
-                const parts = [];
-                if (q)        parts.push(q);
-                if (site)     parts.push('site:' + site);
-                if (filetype) parts.push('filetype:' + filetype);
-                const query = parts.join(' ').trim();
+            const submitter = event.submitter;
+            const isLucky = submitter && submitter.name === 'btnI';
+            const isImageSearch = submitter && submitter.name === 'btnIS';
 
-                if (!query) {
-                    searchInput.focus();
-                    return;
+            if (isLucky) {
+                const results = runSearch(q, site, filetype);
+                if (results.length > 0) {
+                    window.location.href = results[0].url;
                 }
+                return;
+            }
 
-                // which?
-                const name = event.submitter ? event.submitter.name : 'btnG';
+            document.getElementById('search-view').classList.add('hidden');
+            document.getElementById('results-view').classList.remove('hidden');
+            const container = document.getElementById('results-container');
+            const titleEl = document.getElementById('results-title');
+            container.innerHTML = '';
 
-                let url;
-                if (name === 'btnIS') {
-                    url = 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(query);
-                } else if (name === 'btnI') {
-                    url = 'https://www.google.com/search?btnI=1&q=' + encodeURIComponent(query);
-                } else {
-                    url = 'https://www.google.com/search?q=' + encodeURIComponent(query);
-                }
+            if (isImageSearch) {
+                titleEl.textContent = `Image Results for "${q || 'all'}"`;
+                const images = runImageSearch(q);
+                let grid = document.createElement('div');
+                grid.className = "grid grid-cols-3 gap-4";
+                images.forEach(img => {
+                    grid.innerHTML += `
+                        <div class="border rounded p-2 bg-gray-50">
+                            <img src="${img.thumb}" class="w-full h-32 object-cover rounded mb-2">
+                            <p class="text-xs text-gray-600 truncate">${img.title}</p>
+                        </div>
+                    `;
+                });
+                container.appendChild(grid);
+            } else {
+                titleEl.textContent = `Web Results for "${q || 'all'}"`;
+                const results = runSearch(q, site, filetype);
+                results.forEach(res => {
+                    container.innerHTML += `
+                        <div class="p-4 border rounded-md bg-gray-50">
+                            <a href="${res.url}" target="_blank" class="text-blue-600 font-medium hover:underline">${res.title}</a>
+                            <p class="text-sm text-gray-500 truncate">${res.url}</p>
+                            <p class="text-sm text-gray-700 mt-1">${res.snippet}</p>
+                        </div>
+                    `;
+                });
+            }
+        }
 
-                window.location.href = url;
-            });
-        </script>
-    </body>
+        function goBack() {
+            document.getElementById('results-view').classList.add('hidden');
+            document.getElementById('search-view').classList.remove('hidden');
+        }
+    </script>
+</body>
 </html>
